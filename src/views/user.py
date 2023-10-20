@@ -10,5 +10,5 @@ class UserSmallResponse(BaseView):
     content: schemas.UserSmall
 
 
-class UserAvatarResponse(BaseView):
-    content: schemas.UserAvatar
+class UserDocumentResponse(BaseView):
+    content: schemas.UserDocument

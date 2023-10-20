@@ -10,7 +10,7 @@ class RedisConfig:
     HOST: str
     PASSWORD: str
     USERNAME: str
-    PORT: int = 6379
+    PORT: int
 
 
 @dataclass

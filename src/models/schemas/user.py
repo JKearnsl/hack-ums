@@ -14,10 +14,10 @@ class User(BaseModel):
 
     """
     id: uuid.UUID
-    username: str
     email: EmailStr
-    first_name: str | None
-    last_name: str | None
+    first_name: str
+    last_name: str
+    bio: str | None
     role: Role
     state: UserState
 
@@ -28,8 +28,8 @@ class User(BaseModel):
         from_attributes = True
 
 
-class UserAvatar(BaseModel):
-    avatar_url: str | None
+class UserDocument(BaseModel):
+    document_url: str | None
 
 
 class UserMedium(BaseModel):
@@ -38,10 +38,9 @@ class UserMedium(BaseModel):
 
     """
     id: uuid.UUID
-    username: str
     email: EmailStr
-    first_name: str | None
-    last_name: str | None
+    first_name: str
+    last_name: str
     role: RoleMedium
     state: UserState
 
@@ -50,9 +49,8 @@ class UserMedium(BaseModel):
 
 class UserSmall(BaseModel):
     id: uuid.UUID
-    username: str
-    first_name: str | None
-    last_name: str | None
+    first_name: str
+    last_name: str
     role: RoleSmall
     state: UserState
 
@@ -63,17 +61,11 @@ class UserSmall(BaseModel):
 
 
 class UserCreate(BaseModel):
-    username: str
     email: EmailStr
     password: str
-    first_name: str = None
-    last_name: str = None
-
-    @field_validator('username')
-    def username_must_be_valid(cls, value):
-        if not validators.is_valid_username(value):
-            raise ValueError("Имя пользователя должно быть валидным")
-        return value
+    first_name: str
+    last_name: str
+    bio: str = None
 
     @field_validator('password')
     def password_must_be_valid(cls, value):
@@ -95,14 +87,8 @@ class UserCreate(BaseModel):
 
 
 class UserAuth(BaseModel):
-    username: str
+    email: EmailStr
     password: str
-
-    @field_validator('username')
-    def username_must_be_valid(cls, value):
-        if not validators.is_valid_username(value):
-            raise ValueError("Имя пользователя должно быть валидным")
-        return value
 
     @field_validator('password')
     def password_must_be_valid(cls, value):
@@ -112,15 +98,8 @@ class UserAuth(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str = None
     first_name: str = None
     last_name: str = None
-
-    @field_validator('username')
-    def username_must_be_valid(cls, value):
-        if value and not validators.is_valid_username(value):
-            raise ValueError("Имя пользователя должно быть валидным")
-        return value
 
     @field_validator('first_name')
     def first_name_must_be_valid(cls, value):

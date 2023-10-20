@@ -4,7 +4,7 @@ from .jwt import TokenPayload
 from .session import Session
 
 from .user import User
-from .user import UserAvatar
+from .user import UserDocument
 from .user import UserMedium
 from .user import UserSmall
 from .user import UserUpdate

@@ -62,11 +62,10 @@ class JWTManager:
         """
         return self._decode_jwt(token, self.JWT_REFRESH_SECRET_KEY)
 
-    def generate_tokens(self, id: uuid.UUID, username: str, permissions: list[str], state: UserState) -> schemas.Tokens:
+    def generate_tokens(self, id: uuid.UUID, permissions: list[str], state: UserState) -> schemas.Tokens:
         """
         Генерирует access- и refresh-токены
         :param id:
-        :param username:
         :param permissions:
         :param state:
         :return:
@@ -76,7 +75,6 @@ class JWTManager:
                 exp=self._config.JWT.ACCESS_EXPIRE_SECONDS,
                 secret_key=self.JWT_ACCESS_SECRET_KEY,
                 id=str(id),
-                username=username,
                 permissions=permissions,
                 state_id=state.value,
             ),
@@ -84,7 +82,6 @@ class JWTManager:
                 exp=self._config.JWT.REFRESH_EXPIRE_SECONDS,
                 secret_key=self.JWT_REFRESH_SECRET_KEY,
                 id=str(id),
-                username=username,
                 permissions=permissions,
                 state_id=state.value,
             )
