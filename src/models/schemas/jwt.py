@@ -8,7 +8,6 @@ class Tokens(BaseModel):
 
 class TokenPayload(BaseModel):
     id: str
-    username: str
     permissions: list[str]
     state_id: int
     exp: int

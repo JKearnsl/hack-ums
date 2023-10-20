@@ -11,7 +11,7 @@ from src.models.file_type import FileType
 from src.services import ServiceFactory
 from src.views import SessionsResponse
 
-from src.views.user import UserResponse, UserSmallResponse, UserAvatarResponse
+from src.views.user import UserResponse, UserSmallResponse, UserDocumentResponse
 from src.views.s3 import S3UploadResponse
 
 router = APIRouter()
@@ -26,7 +26,7 @@ async def get_current_user(services: ServiceFactory = Depends(get_services)):
 
     Состояние: ACTIVE
     """
-    return UserResponse(content=await services.user.get_me())
+    return UserResponse(content=await services.user.get_self())
 
 
 @router.put("", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)
@@ -38,7 +38,7 @@ async def update_current_user(data: schemas.UserUpdate, services: ServiceFactory
 
     Состояние: ACTIVE
     """
-    await services.user.update_me(data)
+    await services.user.update_self(data)
 
 
 @router.put("/password", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)
@@ -68,7 +68,7 @@ async def delete_current_user(
 
     Состояние: ACTIVE
     """
-    await services.user.delete_me(password)
+    await services.user.delete_self(password)
     await services.auth.logout(request, response)
 
 
@@ -81,7 +81,7 @@ async def get_self_sessions(services: ServiceFactory = Depends(get_services)):
 
     Состояние: ACTIVE
     """
-    return SessionsResponse(content=await services.user.get_my_sessions())
+    return SessionsResponse(content=await services.user.get_self_sessions())
 
 
 @router.get("/session/list/{user_id}", response_model=SessionsResponse, status_code=http_status.HTTP_200_OK)
@@ -96,32 +96,32 @@ async def get_user_sessions(user_id: uuid.UUID, services: ServiceFactory = Depen
     return SessionsResponse(content=await services.user.get_user_sessions(user_id))
 
 
-@router.get("/avatar", response_model=UserAvatarResponse, status_code=http_status.HTTP_200_OK)
-async def get_avatar_url(services: ServiceFactory = Depends(get_services)):
+@router.get("/document", response_model=UserDocumentResponse, status_code=http_status.HTTP_200_OK)
+async def get_document_url(services: ServiceFactory = Depends(get_services)):
     """
-    Получить URL своего аватара
+    Получить URL своего документа
 
     Требуемые права доступа: GET_SELF
 
     Состояние: ACTIVE
     """
-    return UserAvatarResponse(content=await services.user.get_self_avatar_url())
+    return UserDocumentResponse(content=await services.user.get_self_document_url())
 
 
-@router.get("/avatar/{user_id}", response_model=UserAvatarResponse, status_code=http_status.HTTP_200_OK)
-async def get_avatar_url(user_id: uuid.UUID, services: ServiceFactory = Depends(get_services)):
+@router.get("/document/{user_id}", response_model=UserDocumentResponse, status_code=http_status.HTTP_200_OK)
+async def get_document_url(user_id: uuid.UUID, services: ServiceFactory = Depends(get_services)):
     """
-    Получить URL пользовательского аватара по id
+    Получить URL пользовательского документа по id
 
     Требуемые права доступа: GET_USER
     """
-    return UserAvatarResponse(content=await services.user.get_user_avatar_url(user_id))
+    return UserDocumentResponse(content=await services.user.get_user_document_url(user_id))
 
 
-@router.put("/avatar", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
-async def update_avatar(file_type: FileType, services: ServiceFactory = Depends(get_services)):
+@router.put("/document", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
+async def update_document(file_type: FileType, services: ServiceFactory = Depends(get_services)):
     """
-    Обновить аватар текущего пользователя
+    Обновить документ текущего пользователя
 
     Выпускается временный url для загрузки файла
 
@@ -129,13 +129,13 @@ async def update_avatar(file_type: FileType, services: ServiceFactory = Depends(
 
     Состояние: ACTIVE
     """
-    return S3UploadResponse(content=await services.user.update_avatar(file_type))
+    return S3UploadResponse(content=await services.user.update_document(file_type))
 
 
-@router.put("/avatar/{user_id}", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
-async def update_user_avatar(user_id: uuid.UUID, file_type: FileType, services: ServiceFactory = Depends(get_services)):
+@router.put("/document/{user_id}", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
+async def update_user_document(user_id: uuid.UUID, file_type: FileType, services: ServiceFactory = Depends(get_services)):
     """
-    Обновить аватар пользователя по id
+    Обновить документ пользователя по id
 
     Выпускается временный url для загрузки файла
 
@@ -144,7 +144,7 @@ async def update_user_avatar(user_id: uuid.UUID, file_type: FileType, services: 
     Состояние: ACTIVE
 
     """
-    return S3UploadResponse(content=await services.user.update_user_avatar(user_id, file_type))
+    return S3UploadResponse(content=await services.user.update_user_document(user_id, file_type))
 
 
 @router.delete("/session", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)
@@ -156,7 +156,7 @@ async def delete_current_session(session_id: str, services: ServiceFactory = Dep
 
     Состояние: ACTIVE
     """
-    await services.user.delete_my_session(session_id)
+    await services.user.delete_self_session(session_id)
 
 
 @router.delete("/session/{user_id}", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)

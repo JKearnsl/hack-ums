@@ -42,7 +42,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.GET_SELF)
     @state_filter(UserState.ACTIVE)
-    async def get_me(self) -> schemas.UserMedium:
+    async def get_self(self) -> schemas.UserMedium:
         user = await self._repo.get(id=self._current_user.id, as_full=True)
         permission_title_list = [permission.title for permission in user.role.permissions]
         user_model = schemas.User.model_validate(user)
@@ -58,7 +58,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.UPDATE_SELF)
     @state_filter(UserState.ACTIVE)
-    async def update_me(self, data: schemas.UserUpdate) -> None:
+    async def update_self(self, data: schemas.UserUpdate) -> None:
         await self._repo.update(
             id=self._current_user.id,
             **data.model_dump(exclude_unset=True)
@@ -83,6 +83,9 @@ class UserApplicationService:
                     session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
                 ) for session_id, data in session_id_list.items()
             )
+
+        if await self._repo.get_by_email_insensitive(data.email):
+            raise exceptions.BadRequest(f"Пользователь с email:{data.email} уже существует!")
 
         await self._repo.update(
             id=user_id,
@@ -113,7 +116,7 @@ class UserApplicationService:
             subject="Пароль MilkHunters изменен",
             template="successfully_reset_password.html",
             kwargs=dict(
-                username=user.username,
+                fullname=f"{user.last_name} {user.first_name}",
                 change_time=change_time,
                 ip=self._current_user.ip,
                 email=user.email,
@@ -123,7 +126,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.DELETE_SELF)
     @state_filter(UserState.ACTIVE)
-    async def delete_me(self, password: str) -> None:
+    async def delete_self(self, password: str) -> None:
         user = await self._repo.get(id=self._current_user.id)
         if not verify_password(password, user.hashed_password):
             raise exceptions.BadRequest("Неверный пароль!")
@@ -135,7 +138,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.GET_SELF_SESSIONS)
     @state_filter(UserState.ACTIVE)
-    async def get_my_sessions(self) -> list[schemas.Session]:
+    async def get_self_sessions(self) -> list[schemas.Session]:
         session_id_list = await self._session.get_user_sessions(self._current_user.id)
         return [
             schemas.Session(
@@ -163,7 +166,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.DELETE_SELF_SESSION)
     @state_filter(UserState.ACTIVE)
-    async def delete_my_session(self, session_id: str) -> None:
+    async def delete_self_session(self, session_id: str) -> None:
         session_data = await self._session.get_data_from_session(str(self._current_user.id), session_id)
         await self._session.delete_session(self._current_user.id, session_id)
         await self._redis_client_reauth.set(
@@ -181,7 +184,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.UPDATE_SELF)
     @state_filter(UserState.ACTIVE)
-    async def update_avatar(self, file_type: FileType) -> schemas.PreSignedPostUrl:
+    async def update_document(self, file_type: FileType) -> schemas.PreSignedPostUrl:
         resp = await self._file_storage.generate_upload_url(
             file_id=self._current_user.id,
             content_type=file_type.value,
@@ -192,7 +195,7 @@ class UserApplicationService:
 
     @permission_filter(Permission.UPDATE_USER)
     @state_filter(UserState.ACTIVE)
-    async def update_user_avatar(self, user_id: uuid.UUID, file_type: FileType) -> schemas.PreSignedPostUrl:
+    async def update_user_document(self, user_id: uuid.UUID, file_type: FileType) -> schemas.PreSignedPostUrl:
         if not await self._repo.get(id=user_id):
             raise exceptions.NotFound(f"Пользователь с id:{user_id} не найден!")
 
@@ -205,27 +208,30 @@ class UserApplicationService:
         return schemas.PreSignedPostUrl.model_validate(url)
 
     @permission_filter(Permission.GET_USER)
-    async def get_user_avatar_url(self, user_id: uuid.UUID) -> schemas.UserAvatar:
-
+    @state_filter(UserState.ACTIVE)
+    async def get_user_document_url(self, user_id: uuid.UUID) -> schemas.UserDocument:
         if (info := await self._file_storage.info(file_id=user_id)) is None:
-            raise exceptions.NotFound(f"Аватар пользователя с id:{user_id} не найден!")
+            raise exceptions.NotFound(f"Документ пользователя с id:{user_id} не найден!")
 
-        return schemas.UserAvatar(avatar_url=self._file_storage.generate_download_public_url(
-            file_id=user_id,
-            content_type=info.content_type,
-            rcd="inline"
-        ))
+        return schemas.UserDocument(
+            document_url=self._file_storage.generate_download_url(
+                file_id=user_id,
+                content_type=info.content_type,
+                rcd="inline"
+            )
+        )
 
     @permission_filter(Permission.GET_SELF)
     @state_filter(UserState.ACTIVE)
-    async def get_self_avatar_url(self) -> schemas.UserAvatar:
+    async def get_self_document_url(self) -> schemas.UserDocument:
         await self._repo.session.close()
 
-        if (info := await self._file_storage.info(file_id=self._current_user.id)) is None:
-            raise exceptions.NotFound(f"Аватар пользователя с id:{self._current_user.id} не найден!")
+        if await self._file_storage.info(file_id=self._current_user.id) is None:
+            raise exceptions.NotFound(f"Документ пользователя с id:{self._current_user.id} не найден!")
 
-        return schemas.UserAvatar(avatar_url=self._file_storage.generate_download_public_url(
-            file_id=self._current_user.id,
-            content_type=info.content_type,
-            rcd="inline"
-        ))
+        return schemas.UserDocument(
+            document_url=await self._file_storage.generate_download_url(
+                file_id=self._current_user.id,
+                rcd="inline"
+            )
+        )

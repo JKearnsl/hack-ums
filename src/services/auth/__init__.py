@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from fastapi.requests import Request
@@ -62,16 +63,13 @@ class AuthApplicationService:
         :return: User
         """
 
-        if await self._user_repo.get_by_username_insensitive(user.username):
-            raise exceptions.AlreadyExists(f"Пользователь {user.username!r} уже существует")
-
         if await self._user_repo.get_by_email_insensitive(user.email):
             raise exceptions.AlreadyExists(f"Пользователь с email {user.email!r} уже существует")
 
         hashed_password = get_hashed_password(user.password)
         await self._user_repo.create(
             **user.model_dump(exclude={"password"}),
-            role_id="00000000-0000-0000-0000-000000000000",
+            role_id=uuid.UUID(int=0),
             hashed_password=hashed_password
         )
 
@@ -90,7 +88,7 @@ class AuthApplicationService:
         :raise AccessDenied: if user is banned
         """
 
-        user: tables.User = await self._user_repo.get_by_username_insensitive(username=data.username, as_full=True)
+        user: tables.User = await self._user_repo.get_by_email_insensitive(email=data.email, as_full=True)
         if not user:
             raise exceptions.NotFound("Пользователь не найден")
         if not verify_password(data.password, user.hashed_password):
@@ -104,7 +102,7 @@ class AuthApplicationService:
 
         # Генерация и установка токенов
         permission_title_list = [obj.title for obj in user.role.permissions]
-        tokens = self._jwt_manager.generate_tokens(user.id, user.username, permission_title_list, user.state)
+        tokens = self._jwt_manager.generate_tokens(user.id, permission_title_list, user.state)
         self._jwt_manager.set_jwt_cookie(response, tokens)
         await self._session_manager.set_session_id(
             response=response,
@@ -198,7 +196,7 @@ class AuthApplicationService:
             subject="Подтверждение почты",
             template="successfully_confirm_email.html",
             kwargs=dict(
-                username=user.username
+                fullname=f"{user.last_name} {user.first_name}"
             ),
             priority=13,
             ttl=key_lifetime,
@@ -234,7 +232,7 @@ class AuthApplicationService:
             subject="Восстановление пароля",
             template="reset_password.html",
             kwargs=dict(
-                username=user.username,
+                fullname=f"{user.last_name} {user.first_name}",
                 code=code
             ),
             priority=13,
@@ -284,7 +282,7 @@ class AuthApplicationService:
             subject="Восстановление пароля",
             template="successfully_reset_password.html",
             kwargs=dict(
-                username=user.username,
+                fullname=f"{user.last_name} {user.first_name}",
                 change_time=change_time,
                 ip=self._current_user.ip,
                 email=user.email,
@@ -329,7 +327,7 @@ class AuthApplicationService:
             raise exceptions.AccessDenied("Пользователь заблокирован")
 
         permission_title_list = [obj.title for obj in user.role.permissions]
-        new_tokens = self._jwt_manager.generate_tokens(user.id, user.username, permission_title_list, user.state)
+        new_tokens = self._jwt_manager.generate_tokens(user.id, permission_title_list, user.state)
         self._jwt_manager.set_jwt_cookie(response, new_tokens)
         await self._session_manager.set_session_id(
             response=response,
