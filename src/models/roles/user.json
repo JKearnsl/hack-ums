@@ -6,7 +6,6 @@
     "GET_ROLE",
     "LOGOUT",
     "REFRESH_TOKENS",
-    "GET_SELF",
     "UPDATE_SELF",
     "DELETE_SELF",
 
