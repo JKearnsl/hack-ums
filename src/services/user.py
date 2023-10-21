@@ -216,7 +216,6 @@ class UserApplicationService:
         return schemas.UserDocument(
             document_url=self._file_storage.generate_download_url(
                 file_id=user_id,
-                content_type=info.content_type,
                 rcd="inline"
             )
         )
