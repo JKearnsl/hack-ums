@@ -1,30 +1,17 @@
 {
-  "id": "00000000-0000-0000-0000-000000000001",
-  "title": "Admin",
+  "id": "00000000-0000-0000-0000-000000000002",
+  "title": "User",
   "permissions": [
     "GET_SELF",
     "GET_ROLE",
-    
-    "UPDATE_ROLE",
-    "DELETE_ROLE",
-    "CREATE_ROLE",
-    
     "LOGOUT",
     "REFRESH_TOKENS",
-    
+    "GET_SELF",
     "UPDATE_SELF",
-    
-    "CREATE_ROLE",
-    
+    "DELETE_SELF",
+
     "GET_SELF_SESSIONS",
     "DELETE_SELF_SESSION",
-    "GET_USER_SESSIONS",
-    "DELETE_USER_SESSION",
-    
-    "CREATE_USER",
-    "UPDATE_USER",
-    
-    "GET_USER_FULL",
 
     "GET_PRIVATE_VACANCY",
     "CREATE_VACANCY",
@@ -34,6 +21,5 @@
     "UPDATE_TESTING",
     "DELETE_TESTING",
     "GET_USER_TEST_RESULTS"
-    
   ]
 }
