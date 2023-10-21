@@ -56,6 +56,13 @@ class UserApplicationService:
             raise exceptions.NotFound(f"Пользователь с id:{user_id} не найден!")
         return schemas.UserSmall.model_validate(user)
 
+    @permission_filter(Permission.GET_USER_FULL)
+    async def get_user_list(self) -> list[schemas.UserSmall]:
+        users = await self._repo.get_all()
+        #TODO: Короче, этот бесполезный запрос к базе каким-то образом убирает ошибку. Я не знаю, как это работает, но пусть пока будет.
+        print([await self._repo.get(id=user.id, as_full=True) for user in users])
+        return [user for user in users]
+
     @permission_filter(Permission.UPDATE_SELF)
     @state_filter(UserState.ACTIVE)
     async def update_self(self, data: schemas.UserUpdate) -> None:
