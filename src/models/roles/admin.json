@@ -4,8 +4,28 @@
   "permissions": [
     "GET_SELF",
     "GET_ROLE",
+    
     "UPDATE_ROLE",
     "DELETE_ROLE",
-    "CREATE_ROLE"
+    "CREATE_ROLE",
+    
+    "LOGOUT",
+    "REFRESH_TOKENS",
+    
+    "UPDATE_SELF",
+    
+    "CREATE_ROLE",
+    
+    "GET_SELF_SESSIONS",
+    "DELETE_SELF_SESSION",
+    "GET_USER_SESSIONS",
+    "DELETE_USER_SESSION",
+    
+    "CREATE_USER",
+    "UPDATE_USER",
+    
+    "GET_USER_FULL"
+    
+    
   ]
 }
