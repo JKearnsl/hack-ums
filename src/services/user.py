@@ -79,7 +79,7 @@ class UserApplicationService:
 
         if data.state or data.role_id:
             session_id_list = await self._session.get_user_sessions(user_id)
-            if session_id_list:
+            if session_id_list.items():
                 await asyncio.gather(
                     self._redis_client_reauth.set(
                         session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
