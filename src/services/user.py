@@ -85,7 +85,7 @@ class UserApplicationService:
                 ) for session_id, data in session_id_list.items()
             )
 
-        if await self._repo.get_by_email_insensitive(data.email):
+        if data.email and await self._repo.get_by_email_insensitive(data.email):
             raise exceptions.BadRequest(f"Пользователь с email:{data.email} уже существует!")
 
         await self._repo.update(
