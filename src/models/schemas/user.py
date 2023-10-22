@@ -100,6 +100,7 @@ class UserAuth(BaseModel):
 class UserUpdate(BaseModel):
     first_name: str = None
     last_name: str = None
+    bio: str = None
 
     @field_validator('first_name')
     def first_name_must_be_valid(cls, value):
@@ -113,8 +114,15 @@ class UserUpdate(BaseModel):
             raise ValueError("Фамилия должна быть валидной")
         return value
 
+    @field_validator('bio')
+    def bio_must_be_valid(cls, value):
+        if value and len(value) > 255:
+            raise ValueError("Биография должна быть не более 255 символов")
+        return value
+
 
 class UserUpdateByAdmin(UserUpdate):
     email: EmailStr = None
     role_id: uuid.UUID = None
     state: UserState = None
+    bio: str = None
