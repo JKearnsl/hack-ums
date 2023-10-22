@@ -47,7 +47,7 @@ class UserMedium(BaseModel):
     created_at: datetime
 
 
-class UserSmall(User):
+class UserSmall(BaseModel):
     id: uuid.UUID
     first_name: str
     last_name: str

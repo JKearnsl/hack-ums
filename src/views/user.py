@@ -12,7 +12,3 @@ class UserSmallResponse(BaseView):
 
 class UserDocumentResponse(BaseView):
     content: schemas.UserDocument
-
-
-class UserListResponse(BaseView):
-    content: list[schemas.UserSmall]

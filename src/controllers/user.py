@@ -11,7 +11,7 @@ from src.models.file_type import FileType
 from src.services import ServiceFactory
 from src.views import SessionsResponse
 
-from src.views.user import UserResponse, UserSmallResponse, UserDocumentResponse, UserListResponse
+from src.views.user import UserResponse, UserSmallResponse, UserDocumentResponse
 from src.views.s3 import S3UploadResponse
 
 router = APIRouter()
@@ -133,8 +133,7 @@ async def update_document(file_type: FileType, services: ServiceFactory = Depend
 
 
 @router.put("/document/{user_id}", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
-async def update_user_document(user_id: uuid.UUID, file_type: FileType,
-                               services: ServiceFactory = Depends(get_services)):
+async def update_user_document(user_id: uuid.UUID, file_type: FileType, services: ServiceFactory = Depends(get_services)):
     """
     Обновить документ пользователя по id
 
@@ -158,20 +157,6 @@ async def delete_current_session(session_id: str, services: ServiceFactory = Dep
     Состояние: ACTIVE
     """
     await services.user.delete_self_session(session_id)
-
-
-@router.get("/list", response_model=UserListResponse, status_code=http_status.HTTP_200_OK)
-async def get_user_list(
-        services: ServiceFactory = Depends(get_services)
-):
-    """
-    Получить список пользователей
-
-    Требуемые права доступа: GET_USER_FULL
-
-    Состояние: ACTIVE
-    """
-    return UserListResponse(content=await services.user.get_user_list())
 
 
 @router.delete("/session/{user_id}", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)

@@ -11,7 +11,6 @@ from .user import UserUpdate
 from .user import UserUpdateByAdmin
 from .user import UserCreate
 from .user import UserAuth
-from .user import User
 
 from .role import Role
 from .role import RoleMedium
