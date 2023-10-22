@@ -24,7 +24,7 @@
     "CREATE_USER",
     "UPDATE_USER",
     
-    "GET_USER_FULL",
+    "GET_USER",
 
     "GET_PRIVATE_VACANCY",
     "CREATE_VACANCY",

@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import joinedload
 
 from src.models import tables
@@ -19,3 +19,16 @@ class UserRepo(BaseRepository[tables.User]):
         if as_full:
             req = req.options(joinedload(self.table.role).subqueryload(tables.Role.permissions))
         return (await self._session.execute(req)).scalar_one_or_none()
+
+    async def get_all(
+            self, limit: int = 100,
+            offset: int = 0,
+            as_full: bool = False,
+            **kwargs
+    ) -> list[tables.User]:
+        req = select(self.table).filter_by(**kwargs)
+        if as_full:
+            req = req.options(joinedload(self.table.role).subqueryload(tables.Role.permissions))
+
+        result = (await self._session.execute(req.limit(limit).offset(offset))).unique()
+        return result.scalars().all()

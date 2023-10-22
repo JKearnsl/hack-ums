@@ -8,6 +8,7 @@
     "REFRESH_TOKENS",
     "UPDATE_SELF",
     "DELETE_SELF",
+    "GET_USER",
 
     "GET_SELF_SESSIONS",
     "DELETE_SELF_SESSION",

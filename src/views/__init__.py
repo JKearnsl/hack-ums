@@ -1,7 +1,8 @@
 from .base import BaseView
 
 from .user import UserResponse
-from .user import UserSmallResponse
+from .user import UserFullResponse
+from .user import UsersFullResponse
 
 from .role import RoleResponse
 from .role import RolesResponse
