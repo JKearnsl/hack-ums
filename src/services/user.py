@@ -218,7 +218,7 @@ class UserApplicationService:
             raise exceptions.NotFound(f"Документ пользователя с id:{user_id} не найден!")
 
         return schemas.UserDocument(
-            document_url=self._file_storage.generate_download_url(
+            document_url=await self._file_storage.generate_download_url(
                 file_id=user_id,
                 rcd="inline"
             )
