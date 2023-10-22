@@ -79,11 +79,12 @@ class UserApplicationService:
 
         if data.state or data.role_id:
             session_id_list = await self._session.get_user_sessions(user_id)
-            await asyncio.gather(
-                self._redis_client_reauth.set(
-                    session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
-                ) for session_id, data in session_id_list.items()
-            )
+            if session_id_list:
+                await asyncio.gather(
+                    self._redis_client_reauth.set(
+                        session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
+                    ) for session_id, data in session_id_list.items()
+                )
 
         if data.email and await self._repo.get_by_email_insensitive(data.email):
             raise exceptions.BadRequest(f"Пользователь с email:{data.email} уже существует!")
