@@ -77,14 +77,15 @@ class UserApplicationService:
             if not role:
                 raise exceptions.NotFound(f"Роль с id:{data.role_id} не найдена!")
 
-        if data.state or data.role_id:
-            session_id_list = await self._session.get_user_sessions(user_id)
-            if session_id_list.items():
-                await asyncio.gather(
-                    self._redis_client_reauth.set(
-                        session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
-                    ) for session_id, data in session_id_list.items()
-                )
+        # Разлогин активных сессий
+        # if data.state or data.role_id:
+        #     session_id_list = await self._session.get_user_sessions(user_id)
+        #     if session_id_list.items():
+        #         await asyncio.gather(
+        #             self._redis_client_reauth.set(
+        #                 session_id, data["refresh_token"], expire=self._config.JWT.ACCESS_EXPIRE_SECONDS
+        #             ) for session_id, data in session_id_list.items()
+        #         )
 
         if data.email and (user_with_email := await self._repo.get_by_email_insensitive(data.email)):
             if user_with_email.id != user_id:
