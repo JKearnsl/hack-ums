@@ -50,11 +50,12 @@ class UserApplicationService:
         return schemas.UserMedium(**user_model.model_dump(exclude={"role"}), role=role_model)
 
     @permission_filter(Permission.GET_USER)
-    async def get_user(self, user_id: uuid.UUID) -> schemas.UserSmall:
+    @state_filter(UserState.ACTIVE)
+    async def get_user(self, user_id: uuid.UUID) -> schemas.User:
         user = await self._repo.get(id=user_id, as_full=True)
         if not user:
             raise exceptions.NotFound(f"Пользователь с id:{user_id} не найден!")
-        return schemas.UserSmall.model_validate(user)
+        return schemas.User.model_validate(user)
 
     @permission_filter(Permission.UPDATE_SELF)
     @state_filter(UserState.ACTIVE)
@@ -210,7 +211,7 @@ class UserApplicationService:
     @permission_filter(Permission.GET_USER)
     @state_filter(UserState.ACTIVE)
     async def get_user_document_url(self, user_id: uuid.UUID) -> schemas.UserDocument:
-        if (info := await self._file_storage.info(file_id=user_id)) is None:
+        if await self._file_storage.info(file_id=user_id) is None:
             raise exceptions.NotFound(f"Документ пользователя с id:{user_id} не найден!")
 
         return schemas.UserDocument(
@@ -234,3 +235,9 @@ class UserApplicationService:
                 rcd="inline"
             )
         )
+
+    @permission_filter(Permission.GET_USER)
+    @state_filter(UserState.ACTIVE)
+    async def get_users_list(self) -> list[schemas.User]:
+        users = await self._repo.get_all(as_full=True)
+        return [schemas.User.model_validate(user) for user in users]

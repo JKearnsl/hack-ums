@@ -6,8 +6,12 @@ class UserResponse(BaseView):
     content: schemas.UserMedium
 
 
-class UserSmallResponse(BaseView):
-    content: schemas.UserSmall
+class UserFullResponse(BaseView):
+    content: schemas.User
+
+
+class UsersFullResponse(BaseView):
+    content: list[schemas.User]
 
 
 class UserDocumentResponse(BaseView):

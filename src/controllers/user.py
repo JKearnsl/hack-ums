@@ -11,7 +11,7 @@ from src.models.file_type import FileType
 from src.services import ServiceFactory
 from src.views import SessionsResponse
 
-from src.views.user import UserResponse, UserSmallResponse, UserDocumentResponse
+from src.views.user import UserResponse, UserFullResponse, UserDocumentResponse, UsersFullResponse
 from src.views.s3 import S3UploadResponse
 
 router = APIRouter()
@@ -133,7 +133,8 @@ async def update_document(file_type: FileType, services: ServiceFactory = Depend
 
 
 @router.put("/document/{user_id}", response_model=S3UploadResponse, status_code=http_status.HTTP_200_OK)
-async def update_user_document(user_id: uuid.UUID, file_type: FileType, services: ServiceFactory = Depends(get_services)):
+async def update_user_document(user_id: uuid.UUID, file_type: FileType,
+                               services: ServiceFactory = Depends(get_services)):
     """
     Обновить документ пользователя по id
 
@@ -171,14 +172,24 @@ async def delete_user_session(user_id: uuid.UUID, session_id: str, services: Ser
     await services.user.delete_user_session(user_id, session_id)
 
 
-@router.get("/{user_id}", response_model=UserSmallResponse, status_code=http_status.HTTP_200_OK)
+@router.get("/list", response_model=UsersFullResponse, status_code=http_status.HTTP_200_OK)
+async def get_user_list(services: ServiceFactory = Depends(get_services)):
+    """
+    Получить список пользователей
+
+    Требуемые права доступа: GET_USER
+    """
+    return UsersFullResponse(content=await services.user.get_users_list())
+
+
+@router.get("/{user_id}", response_model=UserFullResponse, status_code=http_status.HTTP_200_OK)
 async def get_user(user_id: uuid.UUID, services: ServiceFactory = Depends(get_services)):
     """
     Получить модель пользователя по id
 
     Требуемые права доступа: GET_USER
     """
-    return UserSmallResponse(content=await services.user.get_user(user_id))
+    return UserFullResponse(content=await services.user.get_user(user_id))
 
 
 @router.put("/{user_id}", response_model=None, status_code=http_status.HTTP_204_NO_CONTENT)
